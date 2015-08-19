@@ -1,5 +1,6 @@
 var jwt = require('jsonwebtoken');
 var CryptoJS = require('crypto-js');
+var _ = require('underscore');
 var config = require('../config');
 var userRepo = require('../repositories/user-repository');
 
@@ -24,7 +25,7 @@ function unauthorized(next){
  */
 function authenticated(principal,req,res,next){
   req.principal = principal;
-  var jwtToken = jwt.sign(principal, secrets["jwt-secret"], {
+  var jwtToken = jwt.sign(_.extend({}, principal), secrets["jwt-secret"], {
     expiresInMinutes: 20
   });
   console.log(jwtToken);
@@ -58,7 +59,7 @@ module.exports = function(req,res,next){
     case "basic":
       // authentication method is HTTP Basic
       var arrToken = new Buffer(tokens[2],'base64').toString('utf8').split(':');
-      userRepo.getByName(arrToken[0]).then(function(user){
+      userRepo.findOne({"name": arrToken[0]}).then(function(user){
         // hash the password from authorization header
         var expected = CryptoJS.HmacSHA1(arrToken[1], secrets.passphrase);
 
@@ -81,7 +82,7 @@ module.exports = function(req,res,next){
           unauthorized(next);
         } else {
           // decoded object should be a candidate
-          userRepo.getByName(decoded.name).then(function(user){
+          userRepo.findOne({"_id": decoded._id}).then(function(user){
             authenticated(user,req,res,next);
           }).catch(function(error){
             unauthorized(next);

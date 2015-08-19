@@ -9,6 +9,7 @@ var config = require('./config');
 // set up repositories
 var mongo = require('mongodb').MongoClient.connect('mongodb://'+config.mongo.host+'/'+config.mongo.db,{});
 require('./repositories/user-repository').init(mongo);
+require('./repositories/profile-repository').init(mongo);
 
 var app = express();
 
@@ -29,6 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
 app.use('/candidates',require('./routes/candidates'));
+app.use('/me',require('./routes/profile'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

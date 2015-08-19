@@ -33,17 +33,15 @@ module.exports = {
     });
   },
   /**
-   * Find and retrieve an existing user by name.
-   * @param {string} name - The name of the user.
+   * Find and retrieve one existing user based on query.
+   * @param {string} query - The object container the query parameters.
    * @param {function} [callback] - Optional. Function to be called passing the user.
    * @returns {Promise} A promise object.
    */
-  "getByName":function(name,callback){
+  "findOne":function(query,callback){
     return new RSVP.Promise(function(resolve,reject){
       conn.then(function(db){
-        return db.collection('users').find({
-          "name":name
-        }).toArray();
+        return db.collection('users').find(query).toArray();
       }).then(function(arr){
         if (!arr.length)
           throw new Error("User not found");
@@ -59,7 +57,7 @@ module.exports = {
     });
   },
   /**
-   * Find and retrieve multiple users based on query.
+   * Find and retrieve multiple existing users based on query.
    * @param {Object} query - The object containing the query parameters.
    * @param {function} [callback] - Optional. Function to be called passing the array
    *  of matching users.

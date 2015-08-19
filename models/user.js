@@ -1,4 +1,5 @@
 var Entity = require('./entity');
+var CandidateProfile = require('./profile').CandidateProfile;
 
 /**
  * Abstract class for all entities that can log into the system.
@@ -29,7 +30,7 @@ function Candidate(_opt){
 
   // public
   this.role = "candidate";
-  this.skills = _opt.skills;
+  this.profile = new CandidateProfile(_opt.profile || {});
 
   this.getPasswordHash = function(){
     return pwdHash;
