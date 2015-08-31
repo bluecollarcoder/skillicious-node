@@ -3,7 +3,7 @@ var router = express.Router();
 var User = require('../models/user');
 var UserRepo = require('../repositories/user-repository');
 
-router.use(require('../middleware/auth'));
+router.use(require('../middleware/auth').jwt);
 
 router.route('/').get(function getAllCandidates(req,res,next){
   UserRepo.find({"role":"candidate"}).then(function(candidates){

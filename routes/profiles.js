@@ -5,11 +5,25 @@ var CandidateProfile = require('../models/profile').CandidateProfile;
 var UserRepo = require('../repositories/user-repository');
 var ProfileRepo = require('../repositories/profile-repository');
 
-router.use(require('../middleware/auth'));
+router.use(require('../middleware/auth').jwt);
+
+router.param('user_id',function(req,res,next,id){
+  console.log("id="+id);
+  next();
+});
 
 router.route('/').get(function getProfile(req,res,next){
   var me = req.principal;
-  res.send(me);
+  ProfileRepo.findOne(me._id).then(function(profile){
+    res.send(profile);
+  }).catch(function(error){
+    console.log(error);
+    res.render('error',{"error":error,"message":"Error updating user profile"});
+  });
+});
+
+router.route('/:user_id').get(function getProfileById(req,res,next){
+  console.log("Get profile by ID");
 });
 
 router.route('/profile').put(function updateProfile(req,res,next){

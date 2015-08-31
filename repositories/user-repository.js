@@ -1,10 +1,11 @@
 var User = require('../models/user.js');
 var _ = require('underscore');
 var RSVP = require('rsvp');
+var Mixins = require('./mixins');
 
 var conn;
 
-module.exports = {
+var UserRepository = {
   /**
    * Sets the MongoDB connection to be used by this repository.
    * @constructor
@@ -39,14 +40,15 @@ module.exports = {
    * @returns {Promise} A promise object.
    */
   "findOne":function(query,callback){
+    var self = this;
     return new RSVP.Promise(function(resolve,reject){
       conn.then(function(db){
-        return db.collection('users').find(query).toArray();
+        return db.collection('users').find(self.processQuery(query)).toArray();
       }).then(function(arr){
         if (!arr.length)
           throw new Error("User not found");
         var users = _.map(arr,function(obj){
-          return User.create(obj);
+          return new User.User(obj);
         });
         if (callback)
           callback(users[0]);
@@ -80,3 +82,5 @@ module.exports = {
     });
   }
 };
+
+module.exports = _.extend(UserRepository,Mixins);

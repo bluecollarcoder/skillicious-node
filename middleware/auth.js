@@ -42,56 +42,65 @@ function authenticated(principal,req,res,next){
  * add the authenticated entity to the request and add
  * a new JWT token to the response.
  */
-module.exports = function(req,res,next){
+
+// authentication method is HTTP Basic
+module.exports.basic = function(req,res,next){
   var header = req.headers['authorization'];
   if (!header) {
     unauthorized(next);
     return;
   }
 
-  var tokens = /^(Basic|JWT)\s(.+)/i.exec(header);
-  if (!tokens || tokens.length < 3) {
+  var tokens = /^Basic\s(.+)/i.exec(header);
+  if (!tokens || tokens.length < 2) {
     unauthorized(next);
     return;
   }
 
-  switch (tokens[1].toLowerCase()) {
-    case "basic":
-      // authentication method is HTTP Basic
-      var arrToken = new Buffer(tokens[2],'base64').toString('utf8').split(':');
-      userRepo.findOne({"name": arrToken[0]}).then(function(user){
-        // hash the password from authorization header
-        var expected = CryptoJS.HmacSHA1(arrToken[1], secrets.passphrase);
+  var arrToken = new Buffer(tokens[1],'base64').toString('utf8').split(':');
 
-        // If the password in the header matches hash stored in DB, allow access.
-        if (expected == user.getPasswordHash()) {
-          authenticated(user,req,res,next);
-        } else {
-          unauthorized(next);
-        }
+  userRepo.findOne({"email": arrToken[0]}).then(function(user){
+    console.log(user);
+    // hash the password from authorization header
+    var expected = CryptoJS.HmacSHA1(arrToken[1], secrets.passphrase);
+
+    // If the password in the header matches hash stored in DB, allow access.
+    if (expected == user.getPasswordHash()) {
+      authenticated(user,req,res,next);
+    } else {
+      unauthorized(next);
+    }
+  }).catch(function(error){
+    console.log(error);
+    unauthorized(next);
+  });
+};
+
+// authentication method is JWT
+module.exports.jwt = function(req,res,next){
+  var header = req.headers['authorization'];
+  if (!header) {
+    unauthorized(next);
+    return;
+  }
+
+  var tokens = /^JWT\s(.+)/i.exec(header);
+  if (!tokens || tokens.length < 2) {
+    unauthorized(next);
+    return;
+  }
+
+  jwt.verify(tokens[1], secrets["jwt-secret"], function(err, decoded) {
+    if (err) {
+      console.log(err);
+      unauthorized(next);
+    } else {
+      // decoded object should be a candidate
+      userRepo.findOne({"_id": decoded._id}).then(function(user){
+        authenticated(user,req,res,next);
       }).catch(function(error){
-        console.log(error);
         unauthorized(next);
       });
-      break;
-    case "jwt":
-      // authentication method is JWT
-      jwt.verify(tokens[2], secrets["jwt-secret"], function(err, decoded) {
-        if (err) {
-          console.log(err);
-          unauthorized(next);
-        } else {
-          // decoded object should be a candidate
-          userRepo.findOne({"_id": decoded._id}).then(function(user){
-            authenticated(user,req,res,next);
-          }).catch(function(error){
-            unauthorized(next);
-          });
-        }
-      });
-      break;
-    default:
-      // Impossible
-      throw new Error("Unsupported authentication method");
-  }
+    }
+  });
 };

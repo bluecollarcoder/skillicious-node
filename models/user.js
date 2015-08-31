@@ -10,9 +10,16 @@ var CandidateProfile = require('./profile').CandidateProfile;
 function User(_opt){
   Entity.call(this,_opt);
 
+  // private
+  var pwdHash = _opt.pwdHash;
+
   this.first = _opt.first;
   this.last = _opt.last;
   this.email = _opt.email;
+
+  this.getPasswordHash = function(){
+    return pwdHash;
+  };
 }
 User.prototype = Object.create(Entity.prototype);
 User.prototype.constructor = User;
@@ -25,16 +32,9 @@ User.prototype.constructor = User;
 function Candidate(_opt){
   User.call(this,_opt);
 
-  // private
-  var pwdHash = _opt.pwdHash;
-
   // public
   this.role = "candidate";
   this.profile = new CandidateProfile(_opt.profile || {});
-
-  this.getPasswordHash = function(){
-    return pwdHash;
-  };
 }
 Candidate.prototype = Object.create(User.prototype);
 Candidate.prototype.constructor = Candidate;
@@ -47,16 +47,9 @@ Candidate.prototype.constructor = Candidate;
 function Recruiter(_opt) {
   User.call(this,_opt);
 
-  // private
-  var pwdHash = _opt.pwdHash;
-
   // public
   this.role = "recruiter";
   this.openings = _opt.openings;
-
-  this.getPasswordHash = function(){
-    return pwdHash;
-  };
 }
 Recruiter.prototype = Object.create(User.prototype);
 Recruiter.prototype.constructor = Recruiter;
@@ -77,5 +70,6 @@ module.exports = {
     }
   },
   "Candidate": Candidate,
-  "Recruiter": Recruiter
+  "Recruiter": Recruiter,
+  "User":User
 };
