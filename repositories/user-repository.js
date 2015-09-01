@@ -22,6 +22,7 @@ var UserRepository = {
    * @returns {Promise} A promise object.
    */
   "insert":function(user,callback){
+    user = _.extend({},user,{"pwdHash":user.getPasswordHash()});
     return new RSVP.Promise(function(resolve,reject){
       conn.then(function(db){
         return db.collection('users').insertOne(user);
@@ -48,7 +49,7 @@ var UserRepository = {
         if (!arr.length)
           throw new Error("User not found");
         var users = _.map(arr,function(obj){
-          return new User.User(obj);
+          return new User.GenericUser(obj);
         });
         if (callback)
           callback(users[0]);

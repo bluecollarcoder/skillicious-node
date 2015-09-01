@@ -14,6 +14,7 @@ router.param('user_id',function(req,res,next,id){
 
 router.route('/').get(function getProfile(req,res,next){
   var me = req.principal;
+  console.log(me);
   ProfileRepo.findOne(me._id).then(function(profile){
     res.send(profile);
   }).catch(function(error){

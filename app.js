@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // set up routes
 app.use('/', require('./routes/index'));
 app.use('/auth', require('./routes/auth'));
-app.use('/users', require('./routes/users'));
+app.use('/accounts', require('./routes/accounts'));
 app.use('/candidates',require('./routes/candidates'));
 app.use('/profiles',require('./routes/profiles'));
 

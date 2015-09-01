@@ -17,6 +17,12 @@ function User(_opt){
   this.last = _opt.last;
   this.email = _opt.email;
 
+  if (!this.first || !this.last) {
+    var matches = /^(.*)\s+(\w+)$/.exec(this.name);
+    this.first = matches[1];
+    this.last = matches[2];
+  }
+
   this.getPasswordHash = function(){
     return pwdHash;
   };
@@ -34,7 +40,7 @@ function Candidate(_opt){
 
   // public
   this.role = "candidate";
-  this.profile = new CandidateProfile(_opt.profile || {});
+  this.profile = _opt.profile ? new CandidateProfile(_opt.profile) : {};
 }
 Candidate.prototype = Object.create(User.prototype);
 Candidate.prototype.constructor = Candidate;
@@ -71,5 +77,5 @@ module.exports = {
   },
   "Candidate": Candidate,
   "Recruiter": Recruiter,
-  "User":User
+  "GenericUser":User
 };

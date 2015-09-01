@@ -13,9 +13,12 @@ function unauthorized(next){
   error.status = 401;
   if (next)
     next(error);
-  else {
+  else
     throw error;
-  }
+}
+
+function getPasswordHash(password) {
+  return CryptoJS.HmacSHA1(password, secrets.passphrase);
 }
 
 /**
@@ -23,14 +26,13 @@ function unauthorized(next){
  * compute a JWT token based on the principal and add it
  * to the X-Jwt-Token header.
  */
-function authenticated(principal,req,res,next){
+function authenticated(principal,req,res){
   req.principal = principal;
-  var jwtToken = jwt.sign(_.extend({}, principal), secrets["jwt-secret"], {
+  var jwtToken = jwt.sign({"_id":principal._id}, secrets["jwt-secret"], {
     expiresInMinutes: 20
   });
   console.log(jwtToken);
   res.set('X-Jwt-Token',jwtToken);
-  next();
 }
 
 /**
@@ -42,6 +44,15 @@ function authenticated(principal,req,res,next){
  * add the authenticated entity to the request and add
  * a new JWT token to the response.
  */
+
+module.exports.getPasswordHash = function(password){
+  return getPasswordHash(password).toString();
+};
+
+// mark the principal object passed in as authenticated and set the proper response headers
+module.exports.authenticated = function(principal,req,res){
+  authenticated(principal,req,res);
+};
 
 // authentication method is HTTP Basic
 module.exports.basic = function(req,res,next){
@@ -60,13 +71,10 @@ module.exports.basic = function(req,res,next){
   var arrToken = new Buffer(tokens[1],'base64').toString('utf8').split(':');
 
   userRepo.findOne({"email": arrToken[0]}).then(function(user){
-    console.log(user);
-    // hash the password from authorization header
-    var expected = CryptoJS.HmacSHA1(arrToken[1], secrets.passphrase);
-
     // If the password in the header matches hash stored in DB, allow access.
-    if (expected == user.getPasswordHash()) {
-      authenticated(user,req,res,next);
+    if (getPasswordHash(arrToken[1]) == user.getPasswordHash()) {
+      authenticated(user,req,res);
+      next();
     } else {
       unauthorized(next);
     }
@@ -95,9 +103,10 @@ module.exports.jwt = function(req,res,next){
       console.log(err);
       unauthorized(next);
     } else {
-      // decoded object should be a candidate
+      // decoded object should be an ID
       userRepo.findOne({"_id": decoded._id}).then(function(user){
-        authenticated(user,req,res,next);
+        authenticated(user,req,res);
+        next();
       }).catch(function(error){
         unauthorized(next);
       });
