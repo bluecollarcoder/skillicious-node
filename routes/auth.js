@@ -45,6 +45,8 @@ router.route('/').post(function(req,res,next){
     auth.authenticated(user,req,res);
     res.send(user);
   }).catch(function(error){
+    if (error instanceof UserRepository.error.DuplicateEmailError)
+      error.status = 400;
     next(error);
   });
 });

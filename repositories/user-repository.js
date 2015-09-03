@@ -30,6 +30,8 @@ var UserRepository = {
         console.log(result);
         resolve();
       }).catch(function(error){
+        if (error.code == 11000)
+          error = new DuplicateEmailError("This email has already been registered with our system.",error);
         reject(error);
       });
     });
@@ -81,7 +83,20 @@ var UserRepository = {
         reject(error);
       });
     });
+  },
+  "error":{
+    "DuplicateEmailError":DuplicateEmailError
   }
 };
+
+function DuplicateEmailError(message,err){
+  Error.call(this);
+  this.name = "DuplicateEmailError";
+  this.message = message;
+  if (err)
+    this.stack = err.stack;
+}
+DuplicateEmailError.prototype = Object.create(Error.prototype);
+DuplicateEmailError.prototype.constructor = DuplicateEmailError;
 
 module.exports = _.extend(UserRepository,Mixins);
