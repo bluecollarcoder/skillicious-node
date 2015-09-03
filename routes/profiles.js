@@ -27,7 +27,7 @@ router.route('/:user_id').get(function getProfileById(req,res,next){
   console.log("Get profile by ID");
 });
 
-router.route('/profile').put(function updateProfile(req,res,next){
+router.route('/').put(function updateProfile(req,res,next){
   var me = req.principal;
   console.log(req.body);
   var profile;

@@ -55,7 +55,7 @@ var ProfileRepository = {
           }
         });
       }).then(function(result){
-        resolve(user);
+        resolve(user.profile);
       }).catch(function(error){
         reject(error);
       });
