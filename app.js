@@ -9,6 +9,7 @@ var config = require('./config');
 // set up repositories
 var mongo = require('mongodb').MongoClient.connect('mongodb://'+config.mongo.host+'/'+config.mongo.db,{});
 require('./repositories/user-repository').init(mongo);
+require('./repositories/employer-repository').init(mongo);
 require('./repositories/profile-repository').init(mongo);
 
 var app = express();

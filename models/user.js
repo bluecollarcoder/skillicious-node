@@ -55,7 +55,7 @@ function Recruiter(_opt) {
 
   // public
   this.role = "recruiter";
-  this.openings = _opt.openings;
+  this.employer = _opt.employer;
 }
 Recruiter.prototype = Object.create(User.prototype);
 Recruiter.prototype.constructor = Recruiter;
